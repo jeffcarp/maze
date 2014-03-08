@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 <style>
+* {
+  margin: 0;
+  padding: 0;
+}
 body {
   background-color: #222;
 }
@@ -20,26 +24,77 @@ body {
 <script>
 var canvas;
 var ctx; 
+var grid = [];
+var start;
+var end;
+
+var gridWidth = Math.floor(window.innerWidth / 5);
+var gridHeight = Math.floor(window.innerHeight / 5);
 
 var resetCanvasAspect = function() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 };
 
+var rand = function(num) {
+  return Math.floor(Math.random()*num);
+};
+
 var draw = function() {
   // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillRect(
-    100, // x 
-    100, // y 
-    3,  // width
-    100); // height
-  ctx.fillRect(
-    120, // x 
-    100, // y 
-    3,  // width
-    100); // height
+  grid.forEach(function(row, y) {
+    row.forEach(function(col, x) {
+  
+      var rectWidth = window.innerWidth / gridWidth;
+      var rectHeight = window.innerHeight / gridHeight;
+      var rectX = x * rectWidth;
+      var rectY = y * rectHeight;
+
+      var borderWidth = 1;
+
+      if (col === "start") {
+        ctx.fillStyle = "green";
+        ctx.fillRect(rectX, rectY, rectWidth, rectHeight);  
+      }
+      else if (col === "end") {
+        ctx.fillStyle = "red";
+        ctx.fillRect(rectX, rectY, rectWidth, rectHeight);  
+      }
+      else {
+        // Paint edges
+        ctx.fillStyle = "blue";
+        if (!!~col.indexOf("t")) {
+          ctx.fillRect(rectX, rectY, rectWidth, borderWidth);  
+        } 
+        if (!!~col.indexOf("b")) {
+          ctx.fillRect(rectX, rectY+rectHeight-borderWidth, rectWidth, borderWidth);  
+        } 
+        if (!!~col.indexOf("l")) {
+          ctx.fillRect(rectX, rectY, borderWidth, rectHeight);  
+        } 
+        if (!!~col.indexOf("r")) {
+          ctx.fillRect(rectX+rectWidth-borderWidth, rectY, borderWidth, rectHeight);  
+        } 
+      }
+
+    });
+  });
+};
+
+// Returns an empty grid object, the size
+// of which is based on this window dimensions
+var generateGrid = function() {
+};
+
+var pickSpot = function(str) {
+  var x = rand(gridWidth);
+  var y = rand(gridHeight);
+  grid[y] = grid[y] || [];
+  if (grid[y][x]) x++;
+  grid[y][x] = str;
+  return [y, x];
 };
 
 var startup = function() {
@@ -51,10 +106,60 @@ var startup = function() {
     alert("Please switch to a browser that supports canvas.");
   }
   resetCanvasAspect();
+
+  start = pickSpot("start");
+  end = pickSpot("end");
+
+  draw();
+
+  // Try to find end from start 
+  var counter = 0;
+  var pointer = start.slice();
+  var destinations = [end];
+  for (var i=0; i<40; i++) {
+    destinations.unshift(pickSpot("end"));
+  }
+  var interv = setInterval(function() {
+
+    if (!destinations.length) {
+      clearInterval(interv);
+      console.log("YAAYYYYY!!!!");
+      return;
+    }
+    var dest = destinations[0];
+
+    // Find left/right (x) (1)
+    if (counter % 2) {
+      if (dest[1] !== pointer[1]) {
+        var dir = (dest[1] > pointer[1]) ? 1 : -1;
+        pointer[1] += dir;
+        var y = pointer[0];
+        var x = pointer[1];
+        grid[y] = grid[y] || [];
+        grid[y][x] = "tblr";
+      }
+    }
+    // Find up/down 
+    else {
+      if (dest[0] !== pointer[0]) {
+        var dir = (dest[0] > pointer[0]) ? 1 : -1;
+        pointer[0] += dir;
+        var y = pointer[0];
+        var x = pointer[1];
+        grid[y] = grid[y] || [];
+        grid[y][x] = "tblr";
+      }
+    }
+
+    if (pointer[0] === dest[0] && pointer[1] === dest[1]) {
+      destinations.shift();
+    }
+    counter++;
+    draw();
+  }, 4);
 };
 
 startup();
-draw();
 </script>
 
 
