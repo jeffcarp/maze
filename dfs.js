@@ -1,49 +1,13 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Maze</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-}
-body {
-  background-color: #222;
-}
-</style>
-</head>
-<body>
-
-  <canvas 
-    id="display" 
-    ></canvas>
-
-<script>
 var graph;
-var canvas;
 
 var dfs = function() {
-
-  canvas = document.getElementById("display");
-  if (canvas.getContext) {
-    ctx = canvas.getContext("2d");
-  }
-  else {
-    alert("Please switch to a browser that supports canvas.");
-  }
-  resetCanvasAspect();
-
-  graph = generateSquareGraph(40);
+  graph = generateSquareGraph(5);
   var current = pickRandomCell(graph);
-  graph[current[0]][current[1]] += 's';
-  var end = pickRandomCell(graph);
-  graph[end[0]][end[1]] += 'e';
+  console.log(current);
   // Start at a particular cell and call it the 'exit'
   recurse(current);
-  draw(graph);
+  console.log(graph);
 };
 
 var foo = 0;
@@ -144,59 +108,4 @@ var shuffleArray = function(array) {
   return array;
 };
 
-var draw = function(graph) {
-
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  graph.forEach(function(row, y) {
-    row.forEach(function(col, x) {
-
-      var rectWidth = window.innerWidth / graph.length;
-      var rectHeight = window.innerHeight / graph.length;
-      var rectX = x * rectWidth;
-      var rectY = y * rectHeight;
-
-      var borderWidth = 1;
-
-      // Paint edges
-      ctx.fillStyle = "white";
-      if (!!~col.indexOf("t")) {
-        ctx.fillRect(rectX, rectY, rectWidth, borderWidth);
-      }
-      if (!!~col.indexOf("b")) {
-        ctx.fillRect(rectX, rectY+rectHeight-borderWidth, rectWidth, borderWidth);
-      }
-      if (!!~col.indexOf("l")) {
-        ctx.fillRect(rectX, rectY, borderWidth, rectHeight);
-      }
-      if (!!~col.indexOf("r")) {
-        ctx.fillRect(rectX+rectWidth-borderWidth, rectY, borderWidth, rectHeight);
-      }
-      if (!!~col.indexOf("s")) {
-        ctx.fillStyle = "orange";
-        ctx.fillRect(rectX+borderWidth, rectY+borderWidth, rectWidth-borderWidth*2, rectHeight-borderWidth*2);
-      }
-      if (!!~col.indexOf("e")) {
-        ctx.fillStyle = "red";
-        ctx.fillRect(rectX+borderWidth, rectY+borderWidth, rectWidth-borderWidth*2, rectHeight-borderWidth*2);
-      }
-
-    });
-  });
-};
-
-var resetCanvasAspect = function() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  graph && draw(graph);
-};
-
-window.onresize = resetCanvasAspect;
-
 dfs();
-</script>
-
-
-</body>
-</html>
