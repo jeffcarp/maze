@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Maze</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<style>
+body {
+  background-color: #222;
+}
+</style>
+</head>
+<body>
+
+  <canvas 
+    id="display" 
+    ></canvas>
+
+<script>
+var canvas;
+var ctx; 
+
+var resetCanvasAspect = function() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+};
+
+var draw = function() {
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillRect(
+    100, // x 
+    100, // y 
+    3,  // width
+    100); // height
+  ctx.fillRect(
+    120, // x 
+    100, // y 
+    3,  // width
+    100); // height
+};
+
+var startup = function() {
+  canvas = document.getElementById("display");
+  if (canvas.getContext) {
+    ctx = canvas.getContext("2d");
+  }
+  else {
+    alert("Please switch to a browser that supports canvas.");
+  }
+  resetCanvasAspect();
+};
+
+startup();
+draw();
+</script>
+
+
+</body>
+</html>
