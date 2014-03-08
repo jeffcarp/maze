@@ -1,0 +1,1 @@
+- http://en.wikipedia.org/wiki/Maze_generation_algorithm
