@@ -38,7 +38,7 @@ var dfs = function() {
   }
   resetCanvasAspect();
 
-  graph = generateSquareGraph(20);
+  graph = generateSquareGraph(40);
   var current = pickRandomCell(graph);
   graph[current[0]][current[1]] += 's';
   start = current.slice();
@@ -185,7 +185,7 @@ var draw = function(graph) {
       }
       if (!!~col.indexOf("z")) {
         ctx.fillStyle = "grey";
-        ctx.fillRect(rectX+borderWidth*8, rectY+borderWidth*4, rectWidth-borderWidth*16, rectHeight-borderWidth*8);
+        ctx.fillRect(rectX+borderWidth, rectY+borderWidth, rectWidth-borderWidth*2, rectHeight-borderWidth*2);
       }
 
     });
@@ -221,7 +221,7 @@ var solve = function(curPos) {
 
   // Get available neighbors, recurse into those
 
-  var delayTime = 100;
+  var delayTime = 50;
 
   if (!~curStr.indexOf('t') && !~graph[curPos[0]-1][curPos[1]].indexOf('z')) {
     setTimeout(solve.bind(this, [curPos[0] - 1, curPos[1]]), delayTime);
