@@ -98,7 +98,7 @@ var draw = function() {
 
   // Clear canvas <- unecessary (aw, yeah! this eliminates the artifacting!)
   //ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+var foo = true;
   graph.forEach(function(row, y) {
     row.forEach(function(col, x) {
 
@@ -110,12 +110,6 @@ var draw = function() {
       // Luminance is a function of the manhattan distance from the center (mid)
 
       if (isCell([y, x])) {
-/*
-        if (y == 0) {
-          var lum = Math.abs(x - midX) + Math.abs(y - midY);
-          console.log(lum);
-        }
-*/
         ctx.fillStyle = "hsl("+ graph[y][x] +", 50%, 50%)";
         ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
       }
@@ -149,7 +143,7 @@ else {
 }
 resetCanvasAspect();
 
-var factor = 8;
+var factor = 10;
 var sizeY = Math.floor(window.innerHeight / factor);
 var sizeX = Math.floor(window.innerWidth / factor);
 graph = generateSquareGraph(sizeY, sizeX);
@@ -158,6 +152,15 @@ midX = Math.floor(graph[0].length / 2);
 var current = [midY, midX];
 graph[current[0]][current[1]] = rand(256);
 walls = walls.concat(neighboringWallsOfCell(current));
+
+// Would there be a way to set up a boundary for text so that the maze "grows" around the text?
+/*
+for (var i=50; i<54; i++) {
+  for (var j=80; j<90; j++) {
+    graph[i][j] = 10;
+  }
+}
+*/
 
 /*
 var another = pickRandomCell();
@@ -178,7 +181,6 @@ var interv = function() {
     console.log("no more walls"); 
     return;
   }
-
 
   var wall = walls[rand(walls.length)];
   var cell = randomNeighborCell(wall);
@@ -208,7 +210,6 @@ var interv = function() {
   var i = walls.indexOf(wall);
   if (!!~i) walls.splice(i, 1);
 };
-//}, 10);
 
 /*
 while (walls.length) {
