@@ -11,6 +11,7 @@
   padding: 0;
 }
 body {
+  overflow: hidden;
   background-color: #333;
 }
 </style>
@@ -169,7 +170,8 @@ walls = walls.concat(neighboringWallsOfCell(yetanother));
 */
 
 // Pick a random wall from the list
-var interv = setInterval(function() {
+//var interv = setInterval(function() {
+var interv = function() {
 
   if (!walls.length) {
     clearInterval(interv);
@@ -205,8 +207,8 @@ var interv = setInterval(function() {
   }
   var i = walls.indexOf(wall);
   if (!!~i) walls.splice(i, 1);
-
-}, 10);
+};
+//}, 10);
 
 /*
 while (walls.length) {
@@ -231,7 +233,12 @@ window.requestAnimFrame = (function(){
 
 (function animloop(){
   requestAnimFrame(animloop);
-  draw();
+  if (walls.length) {
+    for (var i=0; i<5; i++) {
+      interv();
+    }
+    draw();
+  }
 })();
 
 </script>
