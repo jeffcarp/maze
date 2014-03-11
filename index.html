@@ -11,7 +11,8 @@
   padding: 0;
 }
 body {
-  background-color: #222;
+  overflow: hidden;
+  background-color: #333;
 }
 </style>
 </head>
@@ -26,223 +27,207 @@ var graph;
 var canvas;
 var start;
 var end;
+var walls = [];
+var midX, midY;
 
-var dfs = function() {
-
-  canvas = document.getElementById("display");
-  if (canvas.getContext) {
-    ctx = canvas.getContext("2d");
-  }
-  else {
-    alert("Please switch to a browser that supports canvas.");
-  }
-  resetCanvasAspect();
-
-  graph = generateSquareGraph(40);
-  var current = pickRandomCell(graph);
-  graph[current[0]][current[1]] += 's';
-  start = current.slice();
-  end = pickRandomCell(graph);
-  graph[end[0]][end[1]] += 'e';
-  // Start at a particular cell and call it the 'exit'
-  recurse(current);
-  draw(graph);
+var rand = function(num) {
+  // Exclusive! 
+  return Math.floor(Math.random()*num);
 };
 
-var foo = 0;
-var recurse = function(current) {
-  // Mark the current cell as visited, and get a list of neighbors. For each neighbor, starting with a randomly selected neighbor:
-  graph[current[0]][current[1]] += 'v';
-  graph[current[0]][current[1]] += ' ' + foo++;
-
-  getNeighbors(current).forEach(function(neighbor) {
-    // If that neighbor hasn't been visited, 
-    if (!!~graph[neighbor[0]][neighbor[1]].indexOf('v')) return;
-    // remove the wall between this cell and that neighbor, 
-    removeWallBetween(current, neighbor);
-    // and then recurse with that neighbor as the current cell
-    recurse(neighbor);
-  });
+// Returns a tuple with a random coordinate picked out from the input graph
+var pickRandomCell = function() {
+  var y = rand(graph.length);
+  var x = rand(graph[0].length);
+  return [y, x];
 };
 
-var getNeighbors = function(cell) {
-  var neighbors = [
-    [cell[0]-1, cell[1]], // up    (y-1, x)
-    [cell[0]+1, cell[1]], // down  (y+1, x)
-    [cell[0], cell[1]-1], // left  (y, x-1)
-    [cell[0], cell[1]+1]  // right (y, x+1)
-  ];
-  neighbors = neighbors.filter(function(coord) {
-    return (
-      coord[0] >= 0           &&
-      coord[0] < graph.length &&
-      coord[1] >= 0           &&
-      coord[1] < graph.length
-    );
-  });
-  return shuffleArray(neighbors);
-};
-
-// Takes two tuples, a and b (in (y, x) format)
-// Removes the character denoting the wall in between them
-var removeWallBetween = function(a, b) {
-  // b is below a, remove a's bottom (and b's top?) this makes no sense
-  if (a[0]+1 === b[0]) {
-    removeChar(a, 'b'); 
-    removeChar(b, 't'); 
-  }
-  // b is above a, remove b's bottom and a's top
-  else if (a[0]-1 === b[0]) {
-    removeChar(a, 't'); 
-    removeChar(b, 'b'); 
-  }
-  // b is to the right of a, remove b's left and a's right 
-  else if (a[1]+1 === b[1]) {
-    removeChar(a, 'r'); 
-    removeChar(b, 'l'); 
-  }
-  // b is to the left of a, remove b's right and a's left 
-  else if (a[1]-1 === b[1]) {
-    removeChar(a, 'l'); 
-    removeChar(b, 'r'); 
-  }
-};
-
-var removeChar = function(coord, chr) {
-  var str = graph[coord[0]][coord[1]].replace(chr, "");
-  graph[coord[0]][coord[1]] = str;
-};
-
-var generateSquareGraph = function(size) {
+var generateSquareGraph = function(sizeY, sizeX) {
   var graph = [];
-  for (var i=0; i<size; i++) {
+  for (var i=0; i<sizeY; i++) {
     graph[i] = [];
-    for (var j=0; j<size; j++) {
-      graph[i][j] = "tblr";
+    for (var j=0; j<sizeX; j++) {
+      graph[i][j] = false; // false == wall
     }
   }
   return graph;
 };
 
-// Returns a tuple with a random coordinate picked out from the input graph
-var pickRandomCell = function(graph) {
-  var y = rand(graph.length);
-  var x = rand(graph.length);
-  return [y, x];
+var resetCanvasAspect = window.onresize = function() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 };
 
-// Exclusive! 
-var rand = function(num) {
-  return Math.floor(Math.random()*num);
+var neighboringWallsOfCell = function(cell) {
+  return [[-1, 0], [1, 0], [0, -1], [0, 1]].map(function(dir) {
+    var y = cell[0] + dir[0];
+    var x = cell[1] + dir[1];
+    return [y, x];
+  }).filter(function(c) {
+    return graph[c[0]] && graph[c[0]][c[1]] === false;
+  });
 };
 
-var shuffleArray = function(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
+var randomNeighborCell = function(cell) {
+  var neighbors = [[-1, 0], [1, 0], [0, -1], [0, 1]].map(function(dir) {
+    var y = cell[0] + dir[0];
+    var x = cell[1] + dir[1];
+    return [y, x];
+  }).filter(function(c) {
+    return isCell(c);
+  });
+  if (!neighbors.length) {
+    console.log("no cells");
   }
-  return array;
+  else {
+    return neighbors[rand(neighbors.length)];
+  }
 };
 
-var draw = function(graph) {
+var draw = function() {
 
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  // Clear canvas <- unecessary (aw, yeah! this eliminates the artifacting!)
+  //ctx.clearRect(0, 0, canvas.width, canvas.height);
   graph.forEach(function(row, y) {
     row.forEach(function(col, x) {
 
-      var rectWidth = window.innerWidth / graph.length;
+      var rectWidth = window.innerWidth / graph[0].length;
       var rectHeight = window.innerHeight / graph.length;
       var rectX = x * rectWidth;
       var rectY = y * rectHeight;
 
-      var borderWidth = 1;
+      // Luminance is a function of the manhattan distance from the center (mid)
 
-      // Paint edges
-      ctx.fillStyle = "white";
-      if (!!~col.indexOf("t")) {
-        ctx.fillRect(rectX, rectY, rectWidth, borderWidth);
-      }
-      if (!!~col.indexOf("b")) {
-        ctx.fillRect(rectX, rectY+rectHeight-borderWidth, rectWidth, borderWidth);
-      }
-      if (!!~col.indexOf("l")) {
-        ctx.fillRect(rectX, rectY, borderWidth, rectHeight);
-      }
-      if (!!~col.indexOf("r")) {
-        ctx.fillRect(rectX+rectWidth-borderWidth, rectY, borderWidth, rectHeight);
-      }
-      if (!!~col.indexOf("s")) {
-        ctx.fillStyle = "orange";
-        ctx.fillRect(rectX+borderWidth, rectY+borderWidth, rectWidth-borderWidth*2, rectHeight-borderWidth*2);
-      }
-      if (!!~col.indexOf("e")) {
-        ctx.fillStyle = "red";
-        ctx.fillRect(rectX+borderWidth, rectY+borderWidth, rectWidth-borderWidth*2, rectHeight-borderWidth*2);
-      }
-      if (!!~col.indexOf("z")) {
-        ctx.fillStyle = "grey";
-        ctx.fillRect(rectX+borderWidth, rectY+borderWidth, rectWidth-borderWidth*2, rectHeight-borderWidth*2);
+      if (isCell([y, x])) {
+        ctx.fillStyle = "hsl("+ graph[y][x] +", 50%, 50%)";
+        ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
       }
 
     });
   });
 };
 
-var resetCanvasAspect = function() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  graph && draw(graph);
+var oppositeCell = function(from, to) {
+  var yDiff = to[0] - from[0];
+  var xDiff = to[1] - from[1];
+  var coord = [to[0] + yDiff, to[1] + xDiff];
+  return at(coord) !== undefined ? coord : null;
 };
 
-// 1st solve function: just take right turns and backtrack until you find the end
-// (DFS)
-var found = false;
-var solve = function(curPos) {
-  if (found) return;
-//  console.log("solve, curPos:", curPos);
+var at = function(coord) {
+  return coord && graph[coord[0]] && graph[coord[0]][coord[1]];
+}; 
 
-  // End game
-  if (curPos[0] === end[0] && curPos[1] === end[1]) {
-    console.log("Found!!!");
-    found = true;
-  }
-
-  // Using 'z' as our 'visited' marker for dfs ('v' was taken by gen algo)
-  graph[curPos[0]][curPos[1]] += 'z'; 
-
-  draw(graph);
-
-  var curStr = graph[curPos[0]][curPos[1]];
-//  console.log("solveIntv, curPos", curPos, curStr);
-
-  // Get available neighbors, recurse into those
-
-  var delayTime = 50;
-
-  if (!~curStr.indexOf('t') && !~graph[curPos[0]-1][curPos[1]].indexOf('z')) {
-    setTimeout(solve.bind(this, [curPos[0] - 1, curPos[1]]), delayTime);
-  }
-  if (!~curStr.indexOf('b') && !~graph[curPos[0]+1][curPos[1]].indexOf('z')) {
-    setTimeout(solve.bind(this, [curPos[0] + 1, curPos[1]]), delayTime);
-  }
-  if (!~curStr.indexOf('l') && !~graph[curPos[0]][curPos[1]-1].indexOf('z')) {
-    setTimeout(solve.bind(this, [curPos[0], curPos[1]-1]), delayTime);
-  }
-  if (!~curStr.indexOf('r') && !~graph[curPos[0]][curPos[1]+1].indexOf('z')) {
-    setTimeout(solve.bind(this, [curPos[0], curPos[1]+1]), delayTime);
-  }
-    // Just get all non-border sides
-  //  var neighbors = getNeighbors(curPos);
+var isCell = function(coord) {
+  var cell = at(coord);
+  return cell !== false && cell !== undefined;
 };
 
-window.onresize = resetCanvasAspect;
+canvas = document.getElementById("display");
+if (canvas.getContext) {
+  ctx = canvas.getContext("2d");
+}
+else {
+  alert("Please switch to a browser that supports canvas.");
+}
+resetCanvasAspect();
 
-dfs();
-solve(start);
+var factor = 10;
+var sizeY = Math.floor(window.innerHeight / factor);
+var sizeX = Math.floor(window.innerWidth / factor);
+graph = generateSquareGraph(sizeY, sizeX);
+midY = Math.floor(graph.length / 2);
+midX = Math.floor(graph[0].length / 2);
+var current = [midY, midX];
+graph[current[0]][current[1]] = rand(256);
+walls = walls.concat(neighboringWallsOfCell(current));
+
+// Would there be a way to set up a boundary for text so that the maze "grows" around the text?
+/*
+for (var i=50; i<54; i++) {
+  for (var j=80; j<90; j++) {
+    graph[i][j] = 10;
+  }
+}
+*/
+
+/*
+var another = pickRandomCell();
+graph[another[0]][another[1]] = rand(256);
+walls = walls.concat(neighboringWallsOfCell(another));
+
+var yetanother = pickRandomCell();
+graph[yetanother[0]][yetanother[1]] = rand(256);
+walls = walls.concat(neighboringWallsOfCell(yetanother));
+*/
+
+// Pick a random wall from the list
+//var interv = setInterval(function() {
+var interv = function() {
+
+  if (!walls.length) {
+    clearInterval(interv);
+    console.log("no more walls"); 
+    return;
+  }
+
+  var wall = walls[rand(walls.length)];
+  var cell = randomNeighborCell(wall);
+  var opposite = oppositeCell(cell, wall);
+  if (opposite && !isCell(opposite)) {
+    var off = 9;
+    var diff = rand(off*2) - off;
+    var newWallHue = at(cell) + diff;
+    if (newWallHue < 0) {
+      newWallHue = 0; 
+    }
+    if (newWallHue > 255) {
+      newWallHue = 255;
+    }
+    var diff = rand(off*2) - off;
+    graph[wall[0]][wall[1]] = newWallHue; 
+    var newOppHue = at(cell) + diff;
+    if (newOppHue < 0) {
+      newOppHue = 0; 
+    }
+    if (newOppHue > 255) {
+      newOppHue = 255;
+    }
+    graph[opposite[0]][opposite[1]] = newOppHue; 
+    walls = walls.concat(neighboringWallsOfCell(opposite));
+  }
+  var i = walls.indexOf(wall);
+  if (!!~i) walls.splice(i, 1);
+};
+
+/*
+while (walls.length) {
+  // Pick a random wall in the list
+  var wall = rand(walls.length);
+  var cell = randomNeighborCell(wall);
+  // If the cell on the opposite side isn't in the maze yet:
+    // Make the wall a passage and mark the cell on the opposite side as part of the maze
+    // Add the neighboring walls of the cell to the wall list
+  // If the cell on the opposite side already was in the maze, remove the wall from the list
+}
+*/
+
+window.requestAnimFrame = (function(){
+  return (
+    window.requestAnimationFrame       ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame    ||
+    window.setTimeout.bind(this, callback, 1000 / 60));
+})();
+
+(function animationLoop() {
+  requestAnimFrame(animloop);
+  if (walls.length) {
+    interv();
+    draw();
+  }
+})();
+
 </script>
 
 
