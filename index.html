@@ -30,8 +30,8 @@ var end;
 var walls = [];
 var midX, midY;
 
-// Exclusive! 
 var rand = function(num) {
+  // Exclusive! 
   return Math.floor(Math.random()*num);
 };
 
@@ -83,22 +83,11 @@ var randomNeighborCell = function(cell) {
     return neighbors[rand(neighbors.length)];
   }
 };
-var shuffleArray = function(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
-  return array;
-};
-
 
 var draw = function() {
 
   // Clear canvas <- unecessary (aw, yeah! this eliminates the artifacting!)
   //ctx.clearRect(0, 0, canvas.width, canvas.height);
-var foo = true;
   graph.forEach(function(row, y) {
     row.forEach(function(col, x) {
 
@@ -224,20 +213,17 @@ while (walls.length) {
 */
 
 window.requestAnimFrame = (function(){
-  return window.requestAnimationFrame       ||
-         window.webkitRequestAnimationFrame ||
-         window.mozRequestAnimationFrame    ||
-         function(callback) {
-           window.setTimeout(callback, 1000 / 60);
-         };
+  return (
+    window.requestAnimationFrame       ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame    ||
+    window.setTimeout.bind(this, callback, 1000 / 60));
 })();
 
-(function animloop(){
+(function animationLoop() {
   requestAnimFrame(animloop);
   if (walls.length) {
-    for (var i=0; i<1; i++) {
-      interv();
-    }
+    interv();
     draw();
   }
 })();
