@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Maze</title>
+  <title>Jeff Carpenter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 <style>
@@ -12,7 +12,49 @@
 }
 body {
   overflow: hidden;
-  background-color: #333;
+  background-color: #222;
+  -webkit-font-smoothing: antialiased;
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+#display {
+}
+#island {
+  position: absolute;
+  top: 0;
+  margin: 1em 0 0 1em;
+  padding: 1em;
+  color: white;
+}
+a {
+  text-decoration: none;
+}
+h1 {
+  font-size: 20px;
+  margin: 0 0 .4em;
+  background-color: #222;
+  padding: 0.1em;
+}
+#island > div {
+  margin-bottom: 0.4em;
+}
+p {
+  background-color: #222;
+  padding: 0.2em;
+  display: inline;
+}
+p small {
+  font-size: 16px;
+  margin-right: 0.5em;
+  font-weight: bold;
+}
+p a, p span {
+  color: white;
+  font-size: 16px;
+  margin-right: 0.4em;
+}
+p a:hover, p span:hover {
+  color: #ddd;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -21,6 +63,43 @@ body {
   <canvas 
     id="display" 
     ></canvas>
+
+    <div id="island">
+      <h1>Hi! I'm Jeff Carpenter, a software developer living in San Francisco.</h1>
+
+      <div>
+        <p>
+          <small>Currently</small>
+          <a href="http://blogging.jeff.is/">Blog</a>
+          <a href="https://bloodhound.com/">Bloodhound</a>
+          <a href="http://rcrd.org/">rcrd</a>
+        </p>
+      </div>
+
+      <div>
+        <p>
+          <small>Elsewhere</small>
+          <a href="https://github.com/jeffcarp">GitHub</a>
+          <a href="https://www.quora.com/Jeff-Carpenter-2">Quora</a>
+          <a href="http://vimeo.com/jeef">Vimeo</a>
+        </p>
+      </div>
+
+      <div>
+        <p>
+          <small>Contact</small>
+          <a href="mailto:hi@jeff.is">hi@jeff.is</a>
+          <a href="https://twitter.com/jcarp">@jcarp</a>
+        </p>
+      </div>
+
+      <div>
+        <p>
+          <small>Extra</small>
+          <span onclick="toggleLanguage()">日本語</span>
+        </p>
+      </div>
+    </div>
 
 <script>
 var graph;
@@ -85,8 +164,6 @@ var randomNeighborCell = function(cell) {
 };
 
 var draw = function() {
-  window.cellCount = 0;
-  window.wallCount = 0;
   graph.forEach(function(row, y) {
     row.forEach(function(col, x) {
 
@@ -94,18 +171,13 @@ var draw = function() {
       var rectHeight = window.innerHeight / graph.length;
       var rectX = x * rectWidth;
       var rectY = y * rectHeight;
-        
 
       if (isCell([y, x])) {
-        cellCount++;
         ctx.fillStyle = "hsl("+ graph[y][x] +", 50%, 50%)";
         ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
-        
         // TODO: If a cell's neighbors of depth 2 are all filled out, remove this cell (and its walls?)
+        
       } 
-      else {
-        wallCount++;
-      }
 
     });
   });
@@ -127,6 +199,10 @@ var isCell = function(coord) {
   return cell !== false && cell !== undefined;
 };
 
+var isWall = function(coord) {
+  return at(coord) === false;
+};
+
 canvas = document.getElementById("display");
 if (canvas.getContext) {
   ctx = canvas.getContext("2d");
@@ -146,7 +222,6 @@ var current = [midY, midX];
 graph[current[0]][current[1]] = rand(256);
 walls = walls.concat(neighboringWallsOfCell(current));
 
-// Pick a random wall from the list
 var interv = function() {
 
   if (!walls.length) {
@@ -183,18 +258,6 @@ var interv = function() {
   if (!!~i) walls.splice(i, 1);
 };
 
-/*
-while (walls.length) {
-  // Pick a random wall in the list
-  var wall = rand(walls.length);
-  var cell = randomNeighborCell(wall);
-  // If the cell on the opposite side isn't in the maze yet:
-    // Make the wall a passage and mark the cell on the opposite side as part of the maze
-    // Add the neighboring walls of the cell to the wall list
-  // If the cell on the opposite side already was in the maze, remove the wall from the list
-}
-*/
-
 window.requestAnimFrame = (function(){
   return (
     window.requestAnimationFrame       ||
@@ -212,6 +275,28 @@ window.requestAnimFrame = (function(){
     console.log("Done.");
   }
 })();
+
+var lang = "english";
+window.toggleLanguage = function() {
+  if (lang === "english") {
+    document.getElementsByTagName("h1")[0].innerText = "こんいちわ、ジェフ大工と申します。サンフランシスコに住んでいる開発者です。どうぞよろしくお願いします！";
+    document.querySelector("span").innerText = "English";
+    document.querySelectorAll("small")[0].innerText = "最新プロジェクト";
+    document.querySelectorAll("small")[1].innerText = "プロファイル";
+    document.querySelectorAll("small")[2].innerText = "問合先";
+    document.querySelectorAll("small")[3].innerText = "言語";
+
+  }
+  else {
+    document.getElementsByTagName("h1")[0].innerText = "Hi! I'm Jeff Carpenter, a software developer living in San Francisco.";
+    document.querySelector("span").innerText = "日本語";
+    document.querySelectorAll("small")[0].innerText = "Currently";
+    document.querySelectorAll("small")[1].innerText = "Elsewhere";
+    document.querySelectorAll("small")[2].innerText = "Contact";
+    document.querySelectorAll("small")[3].innerText = "Extra";
+  }
+  lang = lang === "english" ? "nihongo" : "english";
+};
 
 </script>
 
