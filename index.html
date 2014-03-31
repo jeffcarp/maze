@@ -67,6 +67,14 @@ p a:hover, p span:hover {
     <div id="island">
       <h1>Hi! I'm Jeff Carpenter, a software developer living in San Francisco.</h1>
 
+      <div id="frameTime">
+        Frame time
+      </div>
+
+      <div id="frameNum">
+        Frame num 
+      </div>
+
       <div>
         <p>
           <small>Currently</small>
@@ -167,6 +175,8 @@ var draw = function() {
   graph.forEach(function(row, y) {
     row.forEach(function(col, x) {
 
+      // TODO: If a cell's neighbors of depth 2 are all filled out, remove this cell (and its walls?)
+
       var rectWidth = window.innerWidth / graph[0].length;
       var rectHeight = window.innerHeight / graph.length;
       var rectX = x * rectWidth;
@@ -175,9 +185,29 @@ var draw = function() {
       if (isCell([y, x])) {
         ctx.fillStyle = "hsl("+ graph[y][x] +", 50%, 50%)";
         ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
-        // TODO: If a cell's neighbors of depth 2 are all filled out, remove this cell (and its walls?)
-        
-      } 
+      }
+/*
+      var atari = [
+        // down
+        [1, 0],
+        [2, 0],
+        // up
+        [-1, 0],
+        [-2, 0],
+        // left
+        [0, -1],
+        [0, -2],
+        // right
+        [0, 1],
+        [0, 2]
+      ].every(function(coord) {
+        var aCoord = [y + coord[0], x + coord[1]];
+        return isWall(aCoord) || isCell(aCoord);
+      });
+      if (atari) {
+        //delete graph[y][x];
+      }
+*/
 
     });
   });
@@ -192,7 +222,7 @@ var oppositeCell = function(from, to) {
 
 var at = function(coord) {
   return coord && graph[coord[0]] && graph[coord[0]][coord[1]];
-}; 
+};
 
 var isCell = function(coord) {
   var cell = at(coord);
@@ -225,7 +255,7 @@ walls = walls.concat(neighboringWallsOfCell(current));
 var interv = function() {
 
   if (!walls.length) {
-    console.log("no more walls"); 
+    console.log("no more walls");
     return;
   }
 
@@ -266,11 +296,19 @@ window.requestAnimFrame = (function(){
     window.setTimeout.bind(this, callback, 1000 / 60));
 })();
 
+var i = 0;
 (function animationLoop() {
+  i++;
   if (walls.length) {
+    var start = new Date();
     interv();
     draw();
     requestAnimFrame(animationLoop);
+    var end = (new Date()) - start;
+    if (i % 10 == 0) {
+      document.getElementById('frameNum').innerHTML = i;
+      document.getElementById('frameTime').innerHTML = end;
+    }
   } else {
     console.log("Done.");
   }
