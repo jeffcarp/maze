@@ -89,18 +89,17 @@
   (let [rand-index (rand-int (count wls))
         wall (get wls rand-index)
         cell (random-neighbor-cell wall)
-        opposite (opposite-cell cell wall)]
+        opposite (opposite-cell cell wall)
+        not-current-wall (fn [i val] (if (not (= i rand-index)) val))
+        rest-of-walls (apply vector (keep-indexed not-current-wall wls))]
     (if (and (in-bounds opposite) (is-wall opposite))
       (do
         (place wall "wut")
         (place opposite "wut")
-        (apply vector (concat
-          (keep-indexed
-            (fn [i val] (if (not (= i rand-index)) val))
-            wls)
-          (neighboring-walls opposite))))
-      ; not super dry
-      (apply vector (keep-indexed (fn [i val] (if (not (= i rand-index)) val)) wls)))))
+        (apply vector 
+          (concat rest-of-walls) 
+          (neighboring-walls opposite)))
+      rest-of-walls)))
 
 (defn animation-loop []
   (swap! frame-number inc)
