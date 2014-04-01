@@ -96,9 +96,10 @@
       (do
         (place wall "wut")
         (place opposite "wut")
-        (apply vector 
-          (concat rest-of-walls) 
-          (neighboring-walls opposite)))
+        (apply vector
+          (concat
+            rest-of-walls
+            (neighboring-walls opposite))))
       rest-of-walls)))
 
 (defn animation-loop []
