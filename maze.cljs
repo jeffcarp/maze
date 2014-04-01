@@ -95,18 +95,17 @@
     (if (and (in-bounds opposite) (is-wall opposite))
       (do
         (place wall "wut")
-        (place opposite "wut")
-        (apply vector
-          (concat
-            rest-of-walls
-            (neighboring-walls opposite))))
-      rest-of-walls)))
+        (place opposite "wut")))))
+;        (apply vector
+;          (concat
+;            rest-of-walls
+;            (neighboring-walls opposite))))
+;      rest-of-walls)))
 
 (defn animation-loop []
   (swap! frame-number inc)
   (let [start-time (maze/get-time)]
 
-    ;(.log js/console "wall count" (count @walls))
     (if (pos? (count @walls))
       (let [result (maze/interv @walls)]
 
