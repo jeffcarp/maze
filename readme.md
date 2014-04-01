@@ -13,3 +13,8 @@ Then run:
 ```bash
 cljsc maze.cljs '{:optimizations :advanced}' > maze.js
 ```
+
+## Todo
+
+- Make items in @graph numbers, not strings
+- Make maze/interv return only new walls, make call something like `swap! graph conj (interv @walls)`

@@ -8,6 +8,13 @@
 (def canvas (atom {}))
 (def context (atom {}))
 
+; One character functions might be bad practice
+(defn y [coord]
+  (first coord))
+
+(defn x [coord]
+  (last coord))
+
 (defn reset-canvas-aspect []
   (set! (.-width @canvas) (.-innerWidth js/window))
   (set! (.-height @canvas) (.-innerHeight js/window)))
@@ -22,33 +29,41 @@
   (swap! graph assoc-in coord item))
 
 (defn is-cell [coord]
-  (string? (at coord)))
+  (integer? (at coord)))
 
 (defn is-wall [coord]
-  (not (string? (at coord))))
+  (not (integer? (at coord))))
 
 ; From https://github.com/ibdknox/pinot/blob/master/src/pinot/draw/core.cljs
 (def request-animation-frame
-  (or ;(.-requestAnimationFrame js/window)
-      ;(.-webkitRequestAnimationFrame js/window)
-      ;(.-mozRequestAnimationFrame js/window)
-      ;(.-oRequestAnimationFrame js/window)
-      ;(.-msRequestAnimationFrame js/window)
-      ;(fn [callback] (js/setTimeout callback 17))))
-      (fn [callback] (js/setTimeout callback 1000))))
+  (or (.-requestAnimationFrame js/window)
+      (.-webkitRequestAnimationFrame js/window)
+      (.-mozRequestAnimationFrame js/window)
+      (.-oRequestAnimationFrame js/window)
+      (.-msRequestAnimationFrame js/window)
+      (fn [callback] (js/setTimeout callback 17))))
+      ;(fn [callback] (js/setTimeout callback 1000))))
 
+;(defn draw []
+;  (dotimes [y (count @graph)]
+;    (dotimes [x (count @graph)]
+;      (if (maze/is-cell [y x])
+;        (do
+;          (set! (.-fillStyle @context) "navy")
+;          (.fillRect @context (* 10 x) (* 10 y) 10 10))
+;        (do
+;          (set! (.-fillStyle @context) "grey")
+;          (.fillRect @context (* 10 x) (* 10 y) 10 10))
+;      ))))
 
-(defn draw []
-  (dotimes [y (count @graph)]
-    (dotimes [x (count @graph)]
-      (if (maze/is-cell [y x])
-        (do
-          (set! (.-fillStyle @context) "navy")
-          (.fillRect @context (* 10 x) (* 10 y) 10 10))
-        (do
-          (set! (.-fillStyle @context) "grey")
-          (.fillRect @context (* 10 x) (* 10 y) 10 10))
-      ))))
+(defn draw-block [coord]
+  (if (is-cell coord)
+    (do
+      (set! (.-fillStyle @context) (str "hsl(" (at coord) ", 50%, 50%)"))
+      (.fillRect @context (* 10 (x coord)) (* 10 (y coord)) 10 10))
+    (do
+      (set! (.-fillStyle @context) "grey")
+      (.fillRect @context (* 10 (x coord)) (* 10 (y coord)) 10 10))))
 
 (defn von-neumann-neighborhood [coord]
   (apply vector
@@ -72,12 +87,6 @@
         xDiff (- (last to) (last from))]
     [(+ (first to) yDiff) (+ (last to) xDiff)]))
 
-(defn y [coord]
-  (first coord))
-
-(defn x [coord]
-  (last coord))
-
 (defn in-bounds [coord]
   (and
     (pos? (y coord))
@@ -86,16 +95,21 @@
     (< (x coord) @graph-size)))
 
 (defn interv [wls]
-  (let [rand-index (rand-int (count wls))
-        wall (get wls rand-index)
-        cell (random-neighbor-cell wall)
-        opposite (opposite-cell cell wall)
-        not-current-wall (fn [i val] (if (not (= i rand-index)) val))
-        rest-of-walls (apply vector (keep-indexed not-current-wall wls))]
+  (let [rand-index        (rand-int (count wls))
+        wall              (get wls rand-index)
+        cell              (random-neighbor-cell wall)
+        opposite          (opposite-cell cell wall)
+        not-current-wall  (fn [i val] (if (not (= i rand-index)) val))
+        rest-of-walls     (apply vector (keep-indexed not-current-wall wls))
+        hue-offset        9
+        new-wall-hue      (+ (rand-int (* 2 hue-offset)) (at cell)) ; TODO: subtract hue-offset as well (maybe make a method?)
+        new-opposite-hue  (+ (rand-int (* 2 hue-offset)) (at cell))]
     (if (and (in-bounds opposite) (is-wall opposite))
       (do
-        (place wall "wut")
-        (place opposite "wut")
+        (place wall new-wall-hue)
+        (draw-block wall)
+        (place opposite new-wall-hue)
+        (draw-block opposite)
         (apply vector
           (concat
             rest-of-walls
@@ -108,8 +122,6 @@
 
     (if (pos? (count @walls))
       (let [result (maze/interv @walls)]
-
-        (maze/draw)
 
         (let [total-time (- (maze/get-time) start-time)
               frame-number-elem (.getElementById js/document "frame-number")
@@ -130,8 +142,8 @@
 
   (reset-canvas-aspect)
   (set! (.-onresize js/window) (fn []
-    (reset-canvas-aspect)
-    (maze/draw)))
+    (reset-canvas-aspect)))
+    ;TODO: write and use here something like redraw-graph? (maze/draw)))
 
   (let [factor 10
         sizeY (.floor js/Math (/ (.-innerHeight js/window) factor))
@@ -141,7 +153,8 @@
         start-coord [midY midY]]
     (reset! graph-size sizeY)
     (reset! graph (generate-square-graph sizeY))
-    (place start-coord "start")
+    (place start-coord (rand-int 256))
+    (draw-block start-coord)
     (reset! walls (neighboring-walls start-coord))
     (animation-loop)))
 
