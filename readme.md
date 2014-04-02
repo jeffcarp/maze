@@ -1,6 +1,6 @@
 Maze generation using Prim's algorightm implemented in ClojureScript.
 
-![maze gif](https://github.com/jeffcarp/maze/blob/gh-pages/maze.gif)
+![maze gif](https://raw.githubusercontent.com/jeffcarp/maze/gh-pages/maze.gif)
 
 http://en.wikipedia.org/wiki/Maze_generation_algorithm
 
