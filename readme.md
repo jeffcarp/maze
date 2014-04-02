@@ -1,4 +1,4 @@
-Maze generation using Prim's algorightm implemented in ClojureScript.
+Maze generation using Prim's algorithm implemented in ClojureScript.
 
 ![maze gif](https://raw.githubusercontent.com/jeffcarp/maze/gh-pages/maze.gif)
 
