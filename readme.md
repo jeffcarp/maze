@@ -1,6 +1,6 @@
 Maze generation using Prim's algorightm implemented in ClojureScript.
 
-<video src="maze.mov" autoplay loop></video>
+![maze gif](https://github.com/jeffcarp/maze/blob/gh-pages/maze.gif)
 
 http://en.wikipedia.org/wiki/Maze_generation_algorithm
 
