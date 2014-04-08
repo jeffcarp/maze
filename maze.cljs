@@ -1,5 +1,6 @@
 (ns maze)
 
+; TODO: instead of using atoms, set these up in the init function and pass to render function
 (def graph (atom {}))
 (def graph-size (atom 0))
 (def graph-size-x (atom 0))
@@ -13,6 +14,7 @@
 (def center (atom [0 0]))
 
 ; One character functions might be bad practice
+; TODO: Use {:x 0 :y 0}
 (defn y [coord]
   (first coord))
 
@@ -69,22 +71,26 @@
         (set! (.-fillStyle @context) "grey")
         (.fillRect @context (* factor (x coord)) (* factor (y coord)) factor factor)))))
 
+(defn redraw-graph []
+  (dotimes [i @graph-size-y]
+    (dotimes [j @graph-size-x]
+      (if (is-cell [i j])
+        (draw-block [i j])))))
+
 (defn von-neumann-neighborhood [coord]
-  (apply vector
-    (map
-      (fn [dir]
-        [(+ (first coord) (first dir)) (+ (last coord) (last dir))])
-      [[-1 0] [1 0] [0 -1] [0 1]])))
+  [(map
+    (fn [dir]
+      [(+ (first coord) (first dir)) (+ (last coord) (last dir))])
+    [[-1 0] [1 0] [0 -1] [0 1]])])
 
 (defn neighboring-walls [coord]
-  (apply vector
-    (filter is-wall (von-neumann-neighborhood coord))))
+  [(filter is-wall (von-neumann-neighborhood coord))])
 
 (defn get-time []
   (.round js/Math (.getTime (new js/Date))))
 
 (defn random-neighbor-cell [coord]
-  (rand-nth (apply vector (filter is-cell (von-neumann-neighborhood coord)))))
+  (rand-nth [(filter is-cell (von-neumann-neighborhood coord))]))
 
 (defn opposite-cell [from to]
   (let [yDiff (- (first to) (first from))
@@ -104,9 +110,9 @@
         cell              (random-neighbor-cell wall)
         opposite          (opposite-cell cell wall)
         not-current-wall  (fn [i val] (if (not (= i rand-index)) val))
-        rest-of-walls     (apply vector (keep-indexed not-current-wall wls))
+        rest-of-walls     [(keep-indexed not-current-wall wls)]
         hue-offset        14
-        new-wall-hue      (- (+ (rand-int hue-offset) (at cell)) hue-offset) ; TODO: subtract hue-offset as well (maybe make a method?)
+        new-wall-hue      (- (+ (rand-int hue-offset) (at cell)) hue-offset)
         new-opposite-hue  (- (+ (rand-int hue-offset) new-wall-hue) hue-offset)]
     (if (and (in-bounds opposite) (is-wall opposite))
       (do
@@ -114,11 +120,10 @@
         (draw-block wall)
         (place opposite new-wall-hue)
         (draw-block opposite)
-        (apply vector
-          (concat
-            rest-of-walls
-            (neighboring-walls opposite))))
-      rest-of-walls)))
+        [(concat
+          rest-of-walls
+          (neighboring-walls opposite))]))
+      rest-of-walls))
 
 (defn animation-loop []
   (if (pos? (count @walls))
@@ -134,8 +139,8 @@
 
   (reset-canvas-aspect)
   (set! (.-onresize js/window) (fn []
-    (reset-canvas-aspect)))
-    ;TODO: write and use here something like redraw-graph? (maze/draw)))
+    (reset-canvas-aspect)
+    (redraw-graph)))
 
   (let [sizeY (.floor js/Math (/ (.-innerHeight js/window) factor))
         sizeX (.floor js/Math (/ (.-innerWidth js/window) factor))
@@ -151,4 +156,3 @@
     (draw-block start-coord)
     (reset! walls (neighboring-walls start-coord))
     (animation-loop)))
-
