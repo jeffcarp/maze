@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Jeff Carpenter</title>
+  <title>Maze</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 <style>
@@ -11,63 +11,18 @@
   padding: 0;
 }
 body {
-  overflow: hidden;
   background-color: #222;
-  color: white;
-  -webkit-font-smoothing: antialiased;
-  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-  text-align: center;
+  overflow: hidden;
 }
-a {
-  color: white;
-  border-bottom: dotted 1px #555; 
-  text-decoration: none;
-}
-a:hover {
-  border-bottom: dotted 1px #ccc; 
-  background-color: rgba(255, 255, 255, 0.1); 
-  color: #ccc;
-}
-h1 span, 
-h2 span, 
-h3 span,
-h4 span,
-h5 span, 
-h6 span {
-  background-color: rgba(0, 0, 0, 0.4);
-  display: inline-block;
-  padding: 0.1em;
-}
-h1, 
-h2, 
-h3,
-h4,
-h5, 
-h6 {
-  padding: 0.1em;
-}
-#aisatsu {
+#display {
   width: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
+  height: 100%;
 }
 </style>
 </head>
 <body>
 
-  <div id="aisatsu">
-    <h1><span>Hello fellow human being.</span></h1>
-    <h2><span>My name is Jeff Carpenter.</span></h2>
-    <h3><span>I make web stuff for <a href="https://bloodhound.com/">Bloodhound</a>.</span></h3>
-    <h4><span>I make posts at <a href="http://blogging.jeff.is/">blogging.jeff.is</a>.</span></h4>
-    <h5><span>I make tweets at <a href="https://twitter.com/jcarp">@jcarp</a>.</span></h5>
-    <h6><span>That is all.</span></h6>
-  </div>
-
-  <canvas
-    id="display"
-    ></canvas>
+  <canvas id="display"></canvas>
 
   <script src="out/goog/base.js"></script>
   <script src="out/maze.js"></script>
