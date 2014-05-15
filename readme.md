@@ -4,10 +4,10 @@ Maze generation using [Prim's algorithm](http://en.wikipedia.org/wiki/Maze_gener
 
 ## Build
 
-First, install `cljsc` ClojureScript compiler.
+First, install the `cljsc` command line ClojureScript compiler.
 
 Then run:
 
 ```bash
-cljsc maze.cljs '{:optimizations :advanced}' > maze.js
+cljsc maze.cljs '{:optimizations :advanced}' > out/maze.js
 ```
